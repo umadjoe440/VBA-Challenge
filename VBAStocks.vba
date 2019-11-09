@@ -1,4 +1,4 @@
-Private Sub Workbook_Open()
+Private Sub Worksheet_loop()
 
   MsgBox "Welcome to WALL STREET TABS"
 
@@ -21,7 +21,7 @@ End Sub
 
 Public Sub Wallstreet(stocksheet As String)
 
-MsgBox ("Processing Sheet:  " & stocksheet)
+'MsgBox ("Processing Sheet:  " & stocksheet)
 Sheets(stocksheet).Activate
 
 Dim ticker As String
@@ -54,6 +54,15 @@ Sheets(stocksheet).Cells(1, 9).Value = "Ticker"
 Sheets(stocksheet).Cells(1, 10).Value = "Yearly Change"
 Sheets(stocksheet).Cells(1, 11).Value = "Percent Change"
 Sheets(stocksheet).Cells(1, 12).Value = "Total Stock Volume"
+' Initialize bonus rows
+Sheets(stocksheet).Cells(2, 14).Value = "Greatest % Increase"
+Sheets(stocksheet).Cells(3, 14).Value = "Greatest % Decrease"
+Sheets(stocksheet).Cells(4, 14).Value = "Greatest Total Volume"
+'Initialize bonus columns
+Sheets(stocksheet).Cells(1, 15).Value = "Ticker"
+Sheets(stocksheet).Cells(1, 16).Value = "Value"
+
+'p1 = "Ticker" q1 = "Value"
 
 'read the first row into variables before you enter the main loop
 'now, I realize that I could have done this in a single loop by
@@ -130,5 +139,62 @@ With negative_growth
 .Interior.Color = vbRed
 End With
 
+'Bonus Challenge Code
+
+Dim pct_rg As Range
+Dim vol_rg As Range
+
+
+Set pct_rg = Sheets(stocksheet).Range("K2", Range("K2").End(xlDown))
+Set vol_rg = Sheets(stocksheet).Range("L2", Range("L2").End(xlDown))
+
+Sheets(stocksheet).Cells(2, 16).Value = Application.WorksheetFunction.Max(pct_rg)
+Sheets(stocksheet).Cells(3, 16).Value = Application.WorksheetFunction.Min(pct_rg)
+Sheets(stocksheet).Cells(2, 16).NumberFormat = "0.00%"
+Sheets(stocksheet).Cells(3, 16).NumberFormat = "0.00%"
+Sheets(stocksheet).Cells(4, 16).Value = Application.WorksheetFunction.Max(vol_rg)
+
+Dim max_pct_address As Long
+Dim min_pct_address As Long
+Dim max_vol_address As Long
+
+
+max_pct_address = GetMaxAddr(pct_rg)
+Sheets(stocksheet).Cells(2, 15).Value = Sheets(stocksheet).Cells(max_pct_address, 9)
+
+
+min_pct_address = GetMinAddr(pct_rg)
+Sheets(stocksheet).Cells(3, 15).Value = Sheets(stocksheet).Cells(min_pct_address, 9)
+
+max_vol_address = GetMaxAddr(vol_rg)
+Sheets(stocksheet).Cells(4, 15).Value = Sheets(stocksheet).Cells(max_vol_address, 9)
+
+
 End Sub
+
+Function GetMinAddr(rng As Range) As Long
+    Dim dMin As Double
+    Dim lIndex As Long
+    Dim sAddress As String
+
+    Application.Volatile
+    With Application
+        dMin = .Min(rng)
+        lIndex = .Match(dMin, rng, 0)
+    End With
+    GetMinAddr = (lIndex + 1)
+End Function
+
+Function GetMaxAddr(rng As Range) As Long
+    Dim dMax As Double
+    Dim lIndex As Long
+    Dim sAddress As String
+
+    Application.Volatile
+    With Application
+        dMax = .Max(rng)
+        lIndex = .Match(dMax, rng, 0)
+    End With
+    GetMaxAddr = (lIndex + 1)
+End Function
 
